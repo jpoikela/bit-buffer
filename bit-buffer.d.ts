@@ -1,9 +1,10 @@
 declare module 'bit-buffer' {
-	import {Buffer} from 'buffer';
+	import { Buffer } from 'buffer';
 
 	export class BitView {
-		constructor(buffer: ArrayBuffer | Buffer, byteLength?: number);
+		constructor(buffer: ArrayBuffer | Buffer, byteLength?: number, endianness?: number);
 
+		readonly endianness: number;
 		readonly buffer: Buffer;
 		readonly byteLength: number;
 
@@ -44,8 +45,10 @@ declare module 'bit-buffer' {
 		setFloat64(offset: number, value: number);
 	}
 
+	export const Endianness = Endianness;
+
 	export class BitStream {
-		constructor(source: ArrayBuffer | Buffer | BitView, byteOffset?: number, byteLength?: number)
+		constructor(source: ArrayBuffer | Buffer | BitView, byteOffset?: number, byteLength?: number, endianness?: number)
 
 		readonly length: number;
 		readonly bitsLeft: number;

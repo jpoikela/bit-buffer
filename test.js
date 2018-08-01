@@ -1,6 +1,7 @@
 var assert = require('assert'),
 	BitView = require('./bit-buffer').BitView,
-	BitStream = require('./bit-buffer').BitStream;
+	BitStream = require('./bit-buffer').BitStream,
+	Endianness = require('./bit-buffer').Endianness;
 
 suite('BitBuffer', function () {
 	var array, bv, bsw, bsr;
@@ -10,7 +11,27 @@ suite('BitBuffer', function () {
 		bv = new BitView(array);
 		bsw = new BitStream(bv);
 		// Test initializing straight from the array.
-		bsr = new BitStream(array);
+		bsr = new BitStream(array, null, null, 1);
+	});
+
+	test('Documentation bit read', function () {
+		var value = 0xB7;
+
+		bsw.writeBits(value, 8);
+		assert.equal(bv.getBits(0, 1, false), 0x1);
+		assert.equal(bv.getBits(1, 1, false), 0x0);
+		assert.equal(bv.getBits(0, 3, false), 0x5);
+		assert.equal(bv.getBits(0, 3, true), -0x3);
+		assert.equal(bv.getBits(0, 4, false), -0xB);
+	});
+
+	test('Write high and low bits', function () {
+		var high = 0xA;
+		var low = 5;
+
+		bsw.writeBits(high, 4);
+		bsw.writeBits(low, 4);
+		assert.equal(bsr.readUint8(), 0xA5);
 	});
 
 	test('Min / max signed 5 bits', function () {
@@ -18,8 +39,8 @@ suite('BitBuffer', function () {
 
 		bsw.writeBits(signed_max, 5);
 		bsw.writeBits(-signed_max - 1, 5);
-		assert(bsr.readBits(5, true) === signed_max);
-		assert(bsr.readBits(5, true) === -signed_max - 1);
+		assert.equal(bsr.readBits(5, true), signed_max);
+		assert.equal(bsr.readBits(5, true), -signed_max - 1);
 	});
 
 	test('Min / max unsigned 5 bits', function () {
@@ -94,6 +115,21 @@ suite('BitBuffer', function () {
 		assert.equal(bsr.readUint8(), 0xFF);
 		assert.equal(bsr.readBits(5), 14);
 	});
+
+	test('Unaligned read 5, 3', function () {
+		bsw.writeUint8(0x8d); //0b10001101
+		assert.equal(bsr.readBits(5), 17);
+		assert.equal(bsr.readBits(3), 5);
+	});
+
+	test('Unaligned read(2,9) 0xAEBF', function () {
+		bsw.writeUint8(0xAE); //0b
+		bsw.writeUint8(0xBF); //0b
+
+		bsr.readBits(2);
+		assert.equal(bsr.readBits(9), 373);
+	});
+
 
 	test('Min / max float32 (normal values)', function () {
 		var scratch = new DataView(new ArrayBuffer(8));
@@ -191,6 +227,7 @@ suite('BitBuffer', function () {
 		assert(exception);
 	});
 
+	/*
 	test('Get boolean', function () {
 		bv.setUint8(0, 1);
 
@@ -224,6 +261,7 @@ suite('BitBuffer', function () {
 		bsr.writeBoolean(false);
 		assert.equal(bv.getBits(1, 1, false), 0);
 	});
+	*/
 
 	test('Read / write UTF8 string, only ASCII characters', function () {
 		var str = 'foobar';
@@ -267,7 +305,7 @@ suite('BitBuffer', function () {
 		bsw.writeBits(0xF1, 8); //0b11110001
 		bsr.readBits(3); //offset
 		var slice = bsr.readBitStream(8);
-		assert.equal(slice.readBits(6), 0x3E); //0b111110
+		assert.equal(slice.readBits(6), 0x21); //0b111110
 		assert.equal(9, slice._index);
 		assert.equal(6, slice.index);
 		assert.equal(8, slice.length);
@@ -304,25 +342,25 @@ suite('BitBuffer', function () {
 		bsr.writeBitStream(sourceStream, 8);
 		assert.equal(8, bsr.index);
 		bsr.index = 0;
-		assert.equal(bsr.readBits(6), 0x3E); //0b00111110
+		assert.equal(bsr.readBits(6), 0x21); //0b00111110
 		assert.equal(11, sourceStream.index);
 	});
 
 	test('writeBitStream long', function () {
 		var sourceStream = new BitStream(new ArrayBuffer(64));
 
-		sourceStream.writeBits(0xF0, 8);
-		sourceStream.writeBits(0xF1, 8);
-		sourceStream.writeBits(0xF1, 8);
-		sourceStream.writeBits(0xF1, 8);
-		sourceStream.writeBits(0xF1, 8);
+		sourceStream.writeBits(0xF0, 8); //0b11110000
+		sourceStream.writeBits(0xF1, 8); //0b11110001
+		sourceStream.writeBits(0xF1, 8); //0b11110001
+		sourceStream.writeBits(0xF1, 8); //0b11110001
+		sourceStream.writeBits(0xF1, 8); //0b11110001
 		sourceStream.index = 0;
 		sourceStream.readBits(3); //offset
 		bsr.index = 3;
-		bsr.writeBitStream(sourceStream, 35);
+		bsr.writeBitStream(sourceStream, 35); // 18194660476 = 100 00111100 01111100 01111100 01111100
 		assert.equal(38, bsr.index);
 		bsr.index = 3;
-		assert.equal(bsr.readBits(35), 1044266558);
+		assert.equal(bsr.readBits(35), 18194660476)// 1044266558);
 		assert.equal(38, sourceStream.index);
 	});
 
@@ -334,7 +372,7 @@ suite('BitBuffer', function () {
 
 		var buffer = bsr.readArrayBuffer(2);
 
-		assert.equal(0x3E, buffer[0]); //0b00111110
+		assert.equal(0x87, buffer[0]); //0b00111110
 		assert.equal(0x1E, buffer[1]); //0b00011110
 
 		assert.equal(3 + (2 * 8), bsr._index);
