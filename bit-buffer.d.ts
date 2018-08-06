@@ -22,10 +22,6 @@ declare module 'bit-buffer' {
 
 		getUint32(offset: number): number;
 
-		getFloat32(offset: number): number;
-
-		getFloat64(offset: number): number;
-
 		setBits(offset: number, value: number, bits: number);
 
 		setInt8(offset: number);
@@ -39,10 +35,6 @@ declare module 'bit-buffer' {
 		setUint16(offset: number);
 
 		setUint32(offset: number);
-
-		setFloat32(offset: number, value: number);
-
-		setFloat64(offset: number, value: number);
 	}
 
 	export const Endianness = Endianness;
@@ -75,10 +67,6 @@ declare module 'bit-buffer' {
 
 		readUint32(): number;
 
-		readFloat32(): number;
-
-		readFloat64(): number;
-
 		writeBoolean(value: boolean);
 
 		writeInt8(value: number);
@@ -92,10 +80,6 @@ declare module 'bit-buffer' {
 		writeInt32(value: number);
 
 		writeUint32(value: number);
-
-		writeFloat32(value: number);
-
-		writeFloat64(value: number);
 
 		readASCIIString(length?: number): string;
 
