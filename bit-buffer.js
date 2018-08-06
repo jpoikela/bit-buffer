@@ -449,21 +449,8 @@ BitStream.prototype.writeArrayBuffer = function (buffer, byteLength) {
 	this.writeBitStream(new BitStream(buffer), byteLength * 8);
 };
 
-// AMD / RequireJS
-if (typeof define !== 'undefined' && define.amd) {
-	define(function () {
-		return {
-			BitView: BitView,
-			BitStream: BitStream,
-			Endianness: Endianness
-		};
-	});
-}
-// Node.js
-else if (typeof module !== 'undefined' && module.exports) {
-	module.exports = {
-		BitView: BitView,
-		BitStream: BitStream,
-		Endianness: Endianness
-	};
-}
+module.exports = {
+	BitView: BitView,
+	BitStream: BitStream,
+	Endianness: Endianness
+};
