@@ -30,10 +30,6 @@
 		this._view = new Uint8Array(source, byteOffset, byteLength);
 	};
 
-	// Used to massage fp values so we can operate on them
-	// at the bit level.
-	BitView._scratch = new DataView(new ArrayBuffer(8));
-
 	Object.defineProperty(BitView.prototype, 'buffer', {
 		get: function () { return typeof Buffer !== 'undefined' ? Buffer.from(this._view.buffer) : this._view.buffer; },
 		enumerable: true,
@@ -173,16 +169,6 @@
 			this.getUint8(offset + 16),
 			this.getUint8(offset + 24)]) >>> 0;
 	};
-	BitView.prototype.getFloat32 = function (offset) {
-		BitView._scratch.setUint32(0, this.getUint32(offset));
-		return BitView._scratch.getFloat32(0);
-	};
-	BitView.prototype.getFloat64 = function (offset) {
-		BitView._scratch.setUint32(0, this.getUint32(offset));
-		// DataView offset is in bytes.
-		BitView._scratch.setUint32(4, this.getUint32(offset + 32));
-		return BitView._scratch.getFloat64(0);
-	};
 
 	BitView.prototype.setBoolean = function (offset, value) {
 		this.setBits(offset, value ? 1 : 0, 1);
@@ -214,15 +200,6 @@
 			}
 			this.setBytes(offset, bytes);
 		};
-	BitView.prototype.setFloat32 = function (offset, value) {
-		BitView._scratch.setFloat32(0, value);
-		this.setBits(offset, BitView._scratch.getUint32(0), 32);
-	};
-	BitView.prototype.setFloat64 = function (offset, value) {
-		BitView._scratch.setFloat64(0, value);
-		this.setBits(offset, BitView._scratch.getUint32(0), 32);
-		this.setBits(offset + 32, BitView._scratch.getUint32(4), 32);
-	};
 	BitView.prototype.getArrayBuffer = function (offset, byteLength) {
 		var buffer = new Uint8Array(byteLength);
 		for (var i = 0; i < byteLength; i++) {
@@ -437,8 +414,6 @@
 	BitStream.prototype.readUint16 = reader('getUint16', 16);
 	BitStream.prototype.readInt32 = reader('getInt32', 32);
 	BitStream.prototype.readUint32 = reader('getUint32', 32);
-	BitStream.prototype.readFloat32 = reader('getFloat32', 32);
-	BitStream.prototype.readFloat64 = reader('getFloat64', 64);
 
 	BitStream.prototype.writeBoolean = writer('setBoolean', 1);
 	BitStream.prototype.writeInt8 = writer('setInt8', 8);
@@ -447,8 +422,6 @@
 	BitStream.prototype.writeUint16 = writer('setUint16', 16);
 	BitStream.prototype.writeInt32 = writer('setInt32', 32);
 	BitStream.prototype.writeUint32 = writer('setUint32', 32);
-	BitStream.prototype.writeFloat32 = writer('setFloat32', 32);
-	BitStream.prototype.writeFloat64 = writer('setFloat64', 64);
 
 	BitStream.prototype.readASCIIString = function (bytes) {
 		return readASCIIString(this, bytes);

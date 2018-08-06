@@ -22,7 +22,7 @@ suite('BitBuffer', function () {
 		assert.equal(bv.getBits(1, 1, false), 0x0);
 		assert.equal(bv.getBits(0, 3, false), 0x5);
 		assert.equal(bv.getBits(0, 3, true), -0x3);
-		assert.equal(bv.getBits(0, 4, false), -0xB);
+		assert.equal(bv.getBits(0, 4, false), 0xB);
 	});
 
 	test('Write high and low bits', function () {
@@ -131,40 +131,6 @@ suite('BitBuffer', function () {
 	});
 
 
-	test('Min / max float32 (normal values)', function () {
-		var scratch = new DataView(new ArrayBuffer(8));
-
-		scratch.setUint32(0, 0x00800000);
-		scratch.setUint32(4, 0x7f7fffff);
-
-		var min = scratch.getFloat32(0);
-		var max = scratch.getFloat32(4);
-
-		bsw.writeFloat32(min);
-		bsw.writeFloat32(max);
-
-		assert.equal(bsr.readFloat32(), min);
-		assert.equal(bsr.readFloat32(), max);
-	});
-
-	test('Min / max float64 (normal values)', function () {
-		var scratch = new DataView(new ArrayBuffer(16));
-
-		scratch.setUint32(0, 0x00100000);
-		scratch.setUint32(4, 0x00000000);
-		scratch.setUint32(8, 0x7fefffff);
-		scratch.setUint32(12, 0xffffffff);
-
-		var min = scratch.getFloat64(0);
-		var max = scratch.getFloat64(8);
-
-		bsw.writeFloat64(min);
-		bsw.writeFloat64(max);
-
-		assert.equal(bsr.readFloat64(), min);
-		assert.equal(bsr.readFloat64(), max);
-	});
-
 	test('Overwrite previous value with 0', function () {
 		bv.setUint8(0, 13);
 		bv.setUint8(0, 0);
@@ -227,14 +193,13 @@ suite('BitBuffer', function () {
 		assert(exception);
 	});
 
-	/*
 	test('Get boolean', function () {
 		bv.setUint8(0, 1);
 
-		assert(bv.getBoolean(0));
+		assert(bv.getBoolean(7));
 
 		bv.setUint8(0, 0);
-		assert(!bv.getBoolean(0));
+		assert(!bv.getBoolean(7));
 	});
 
 	test('Set boolean', function () {
@@ -261,7 +226,6 @@ suite('BitBuffer', function () {
 		bsr.writeBoolean(false);
 		assert.equal(bv.getBits(1, 1, false), 0);
 	});
-	*/
 
 	test('Read / write UTF8 string, only ASCII characters', function () {
 		var str = 'foobar';
@@ -360,8 +324,9 @@ suite('BitBuffer', function () {
 		bsr.writeBitStream(sourceStream, 35); // 18194660476 = 100 00111100 01111100 01111100 01111100
 		assert.equal(38, bsr.index);
 		bsr.index = 3;
-		assert.equal(bsr.readBits(35), 18194660476)// 1044266558);
+		assert.throws(function () { bsr.readBits(35); }, 'Too many bits read');// 1044266558);
 		assert.equal(38, sourceStream.index);
+		assert.equal(3, bsr.index);
 	});
 
 	test('readArrayBuffer', function () {
@@ -372,25 +337,26 @@ suite('BitBuffer', function () {
 
 		var buffer = bsr.readArrayBuffer(2);
 
-		assert.equal(0x87, buffer[0]); //0b00111110
-		assert.equal(0x1E, buffer[1]); //0b00011110
+		assert.equal(0x87, buffer[0]); //0b10000111
+		assert.equal(0x8F, buffer[1]); //0b10001111
 
 		assert.equal(3 + (2 * 8), bsr._index);
 	});
 
 	test('writeArrayBuffer', function () {
 		var source = new Uint8Array(4);
-		source[0] = 0xF0;
-		source[1] = 0xF1;
-		source[2] = 0xF1;
+		source[0] = 0xF0; //0b11110000
+		source[1] = 0xF1; //0b11110001
+		source[2] = 0xF1; //0b11110001
+		bsw.writeBits(0x00, 8);
 		bsr.readBits(3); //offset
 
-		bsr.writeArrayBuffer(source.buffer, 2);
+		bsr.writeArrayBuffer(source.buffer, 2); //0b00011110 00011110 001
 		assert.equal(19, bsr.index);
 
 		bsr.index = 0;
 
-		assert.equal(bsr.readBits(8), 128);
+		assert.equal(bsr.readBits(8), 30);
 	});
 
 	test('Get buffer from view', function () {
