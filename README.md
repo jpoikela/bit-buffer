@@ -4,7 +4,7 @@
 
 BitEater provides two objects, `BitView` and `BitStream`. `BitView` is a wrapper for ArrayBuffers, similar to JavaScript's [DataView](https://developer.mozilla.org/en-US/docs/JavaScript/Typed_arrays/DataView), but with support for bit-level reads and writes. `BitStream` is a wrapper for a `BitView` used to help maintain your current buffer position, as well as to provide higher-level read / write operations such as for ASCII strings.
 
-NOTE! BitEater is not compatible with BitBuffer: it uses opposite bit ordering. Additionally BitEater allows setting endianness.
+NOTE! BitEater is not compatible with BitBuffer: it uses opposite bit ordering. Additionally BitEater does not supports floats nor UTF, but instead allows setting endianness.
 
 
 ## BitView
@@ -63,14 +63,6 @@ little_endian_view.getUint16(0, false);
 62647// 0xF4B7
 ```
 
-### getFloat32(offset)
-
-Gets 32 bits from `offset`, and coerces and returns as a proper float32 value.
-
-### getFloat64(offset)
-
-Gets 64 bits from `offset`, and coerces and returns as a proper float64 value.
-
 ### setBits(offset, value, bits)
 
 Sets `bits` number of bits at `offset`.
@@ -78,14 +70,6 @@ Sets `bits` number of bits at `offset`.
 ### setInt8, setUint8, setInt16, setUint16, setInt32, setUint32(offset)
 
 Shortcuts for setBits, setting the correct `bits` count.
-
-### setFloat32(offset)
-
-Coerces a float32 to uint32 and sets at `offset`.
-
-### setFloat64(offset)
-
-Coerces a float64 to two uint32s and sets at `offset`.
 
 
 ## BitStream
@@ -140,14 +124,6 @@ Read a 8, 16 or 32 bits (unsigned) integer at the current index, updating the in
 
 Write 8, 16 or 32 bits from `value` as (unsigned) integer at the current index, updating the index.
 
-#### readFloat32(), readFloat64()
-
-Read a 32 or 64 bit floating point number at the current index, updating the index.
-
-#### writeFloat32(value), writeFloat64()
-
-Set 32 or 64 bits from `value` as floating point value at the current index, updating the index.
-
 #### readBoolean()
 
 Read a single bit from the view at the current index, updating the index.
@@ -156,11 +132,11 @@ Read a single bit from the view at the current index, updating the index.
 
 Write a single bit to the view at the current index, updating the index.
 
-#### readASCIIString(optional bytes), readUTF8String(optional bytes)
+#### readASCIIString(optional bytes)
 
 Reads bytes from the underlying view at the current index until either `bytes` count is reached or a 0x00 terminator is reached.
 
-#### writeASCIIString(string, optional bytes), writeUTF8String(string, optional bytes)
+#### writeASCIIString(string, optional bytes)
 
 Writes a string followed by a NULL character to the underlying view starting at the current index. If the string is longer than `bytes` it will be truncated, and if it is shorter 0x00 will be written in its place.
 
