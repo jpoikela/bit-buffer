@@ -1,7 +1,7 @@
 var assert = require('assert'),
-	BitView = require('./bit-buffer').BitView,
-	BitStream = require('./bit-buffer').BitStream,
-	Endianness = require('./bit-buffer').Endianness;
+	BitView = require('./bit-eater').BitView,
+	BitStream = require('./bit-eater').BitStream,
+	Endianness = require('./bit-eater').Endianness;
 
 suite('BitBuffer', function () {
 	var array, bv, bsw, bsr;

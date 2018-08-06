@@ -1,18 +1,18 @@
 {
-  "name": "bit-buffer",
+  "name": "bit-eater",
   "version": "0.2.3",
   "description": "Bit-level reads and writes for ArrayBuffers",
-  "main": "bit-buffer.js",
-  "types": "./bit-buffer.d.ts",
+  "main": "bit-eater.js",
+  "types": "./bit-eater.d.ts",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "make test"
+    "test": "./node_modules/.bin/mocha -u tdd"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/inolen/bit-buffer.git"
+    "url": "git://github.com/jpoikela/bit-eater.git"
   },
   "keywords": [
     "dataview",
@@ -20,12 +20,13 @@
     "bit",
     "bits"
   ],
-  "author": "Anthony Pesch",
+  "author": "Jani Poikela",
   "contributors": [
+    "Anthony Pesch",
     "Robin Appelman"
   ],
   "license": "MIT",
-  "gitHead": "cd4417237bed1f22dd5adfd8a6b961ea7234d9c9",
+  "gitHead": "",
   "readmeFilename": "README.md",
   "devDependencies": {
     "@types/node": "^7.0.5",
