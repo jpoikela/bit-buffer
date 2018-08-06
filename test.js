@@ -227,43 +227,6 @@ suite('BitBuffer', function () {
 		assert.equal(bv.getBits(1, 1, false), 0);
 	});
 
-	test('Read / write UTF8 string, only ASCII characters', function () {
-		var str = 'foobar';
-
-		bsw.writeUTF8String(str);
-		assert(bsw.byteIndex === str.length + 1);  // +1 for 0x00
-
-		assert.equal(bsr.readUTF8String(), str);
-		assert.equal(bsr.byteIndex, str.length + 1);
-	});
-
-	test('Read / write UTF8 string, non ASCII characters', function () {
-		var str = '日本語';
-
-		var bytes = [
-			0xE6,
-			0x97,
-			0xA5,
-			0xE6,
-			0x9C,
-			0xAC,
-			0xE8,
-			0xAA,
-			0x9E
-		];
-
-		bsw.writeUTF8String(str);
-
-		for (var i = 0; i < bytes.length; i++) {
-			assert.equal(bytes[i], bv.getBits(i * 8, 8));
-		}
-
-		assert.equal(bsw.byteIndex, bytes.length + 1);  // +1 for 0x00
-
-		assert.equal(str, bsr.readUTF8String());
-		assert.equal(bsr.byteIndex, bytes.length + 1);
-	});
-
 	test('readBitStream', function () {
 		bsw.writeBits(0xF0, 8); //0b11110000
 		bsw.writeBits(0xF1, 8); //0b11110001
